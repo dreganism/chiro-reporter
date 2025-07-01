@@ -1,0 +1,9 @@
+# chiro-reporter/Cargo.toml
+
+[workspace]
+members = [
+    "backend_actix_web",
+    # You can add "shared", "cli", etc. later if needed
+]
+
+resolver = "2"
