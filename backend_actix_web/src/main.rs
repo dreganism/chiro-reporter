@@ -5,6 +5,7 @@ use std::env;
 
 mod services;         // For logic like OpenAI API calls
 mod routes;           // For HTTP endpoints
+mod llm;              // Business logic for generating reports
 use routes::report;   // Specific to POST /api/report
 
 /// Simple health check endpoint for uptime monitoring or readiness checks

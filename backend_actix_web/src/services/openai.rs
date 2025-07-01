@@ -78,6 +78,7 @@ mod tests {
     use super::*;
 
     #[tokio::test]
+    #[ignore]
     async fn test_call_openai_chat_works() {
         let prompt = "Say hello in a medical style.";
         let result = call_openai_chat(prompt.to_string()).await;

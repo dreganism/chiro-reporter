@@ -3,6 +3,7 @@ use std::env;
 use dotenv::dotenv;
 
 #[tokio::test]
+#[ignore]
 async fn test_call_openai_chat_works() {
     dotenv().ok(); // 👈 Explicitly load .env for test
 

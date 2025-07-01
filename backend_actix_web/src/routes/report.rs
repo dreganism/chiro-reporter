@@ -1,7 +1,6 @@
 use actix_web::{web, post, HttpResponse, Error};
 use actix_multipart::Multipart;
 use futures_util::StreamExt;
-use uuid::Uuid;
 
 use crate::llm::{generate_report, ReportRequest};
 
@@ -69,7 +68,6 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
 //
 // Key architectural points:
 // - Uses Actix's `Multipart` to support file uploads, and `StreamExt` for async processing
-// - `Uuid` can be used to uniquely identify file uploads (if needed for temp storage or caching)
 // - `ReportRequest` encapsulates user input in a clear, structured format
 // - `generate_report` is designed for easy mocking/stubbing in unit tests
 //
