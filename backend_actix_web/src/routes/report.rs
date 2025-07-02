@@ -1,5 +1,5 @@
-use actix_web::{web, post, HttpResponse, Error};
 use actix_multipart::Multipart;
+use actix_web::{post, web, Error, HttpResponse};
 use futures_util::StreamExt;
 use uuid::Uuid;
 
@@ -32,7 +32,10 @@ pub async fn generate(mut payload: Multipart) -> Result<HttpResponse, Error> {
                 denial_text = String::from_utf8_lossy(&data).to_string();
             }
             "files[]" => {
-                let filename = content_disposition.get_filename().unwrap_or("file.txt").to_string();
+                let filename = content_disposition
+                    .get_filename()
+                    .unwrap_or("file.txt")
+                    .to_string();
                 files.push((filename, data));
             }
             _ => (),

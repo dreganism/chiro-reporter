@@ -1,7 +1,7 @@
+use anyhow::{anyhow, Result};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::env;
-use anyhow::{anyhow, Result};
 
 #[derive(Serialize, Deserialize, Debug)]
 struct ChatMessage {
@@ -91,7 +91,6 @@ mod tests {
         );
     }
 }
-
 
 // TODO: Write unit tests for `call_openai_chat()` using mock OpenAI endpoints.
 // This will require setting up a mock server or using a library like `mockito` to simulate OpenAI's API responses.

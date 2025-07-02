@@ -1,6 +1,6 @@
 use backend_actix_web::services::openai::call_openai_chat;
-use std::env;
 use dotenv::dotenv;
+use std::env;
 
 #[tokio::test]
 async fn test_call_openai_chat_works() {
@@ -12,7 +12,11 @@ async fn test_call_openai_chat_works() {
     );
 
     let result = call_openai_chat("Test prompt".to_string()).await;
-    assert!(result.is_ok(), "Expected Ok(_), got error: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "Expected Ok(_), got error: {:?}",
+        result.err()
+    );
 
     let output = result.unwrap();
     assert!(
