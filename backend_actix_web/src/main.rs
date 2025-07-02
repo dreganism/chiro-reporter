@@ -3,9 +3,9 @@ use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use dotenv::dotenv;
 use std::env;
 
-mod services;         // For logic like OpenAI API calls
-mod routes;           // For HTTP endpoints
-use routes::report;   // Specific to POST /api/report
+mod routes;
+mod services; // For logic like OpenAI API calls // For HTTP endpoints
+use routes::report; // Specific to POST /api/report
 
 /// Simple health check endpoint for uptime monitoring or readiness checks
 async fn health_check() -> impl Responder {
@@ -14,8 +14,8 @@ async fn health_check() -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    dotenv().ok();        // Load .env variables
-    env_logger::init();   // Initialize structured logging
+    dotenv().ok(); // Load .env variables
+    env_logger::init(); // Initialize structured logging
 
     let port = env::var("PORT").unwrap_or_else(|_| "8080".to_string());
     let addr = format!("0.0.0.0:{}", port);
@@ -24,8 +24,8 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(|| {
         App::new()
-            .wrap(Cors::permissive())         // ⚠ Relaxed CORS for dev. Lock this down in prod!
-            .configure(report::configure)     // Mount /api/report route
+            .wrap(Cors::permissive()) // ⚠ Relaxed CORS for dev. Lock this down in prod!
+            .configure(report::configure) // Mount /api/report route
             .route("/health", web::get().to(health_check)) // Mount /health check
     })
     .bind(addr)?
