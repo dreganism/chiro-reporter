@@ -7,6 +7,7 @@ edition = "2021"
 anyhow = "1.0"
 actix-web = "4"
 actix-cors = "0.6"
+actix-multipart = "0.6"
 dotenv = "0.15"
 env_logger = "0.10"
 log = "0.4"
@@ -15,6 +16,7 @@ serde_json = "1.0"
 reqwest = { version = "0.11", features = ["json", "blocking", "rustls-tls"] }
 uuid = { version = "1.2", features = ["v4"] }
 tokio = { version = "1", features = ["full"] }
+futures-util = "0.3"
 
 [lib]
 path = "src/lib.rs"

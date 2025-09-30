@@ -1,52 +1,13 @@
-use actix_multipart::Multipart;
-use actix_web::{post, web, Error, HttpResponse};
+use actix_multipart::{Field, Multipart};
+use actix_web::{error, post, web, Error, HttpResponse};
 use futures_util::StreamExt;
-use uuid::Uuid;
 
 use crate::llm::{generate_report, ReportRequest};
 
 /// POST /api/report - Generate GPT medical report
 #[post("/api/report")]
-pub async fn generate(mut payload: Multipart) -> Result<HttpResponse, Error> {
-    let mut report_type = String::new();
-    let mut denial_text = String::new();
-    let mut files: Vec<(String, Vec<u8>)> = Vec::new();
-
-    while let Some(item) = payload.next().await {
-        let mut field = item?;
-        let content_disposition = field.content_disposition().unwrap();
-
-        let name = content_disposition.get_name().unwrap_or("").to_string();
-
-        let mut data = Vec::new();
-        while let Some(chunk) = field.next().await {
-            let chunk = chunk?;
-            data.extend_from_slice(&chunk);
-        }
-
-        match name.as_str() {
-            "report_type" => {
-                report_type = String::from_utf8_lossy(&data).to_string();
-            }
-            "denial_text" => {
-                denial_text = String::from_utf8_lossy(&data).to_string();
-            }
-            "files[]" => {
-                let filename = content_disposition
-                    .get_filename()
-                    .unwrap_or("file.txt")
-                    .to_string();
-                files.push((filename, data));
-            }
-            _ => (),
-        }
-    }
-
-    let request = ReportRequest {
-        report_type,
-        denial_text,
-        files,
-    };
+pub async fn generate(payload: Multipart) -> Result<HttpResponse, Error> {
+    let request = parse_report_request(payload).await?;
 
     match generate_report(request).await {
         Ok(report_response) => Ok(HttpResponse::Ok().json(report_response)),
@@ -57,6 +18,62 @@ pub async fn generate(mut payload: Multipart) -> Result<HttpResponse, Error> {
 /// Configures all /api/report routes
 pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.service(generate);
+}
+
+/// Reads the multipart payload and extracts the report request data.
+async fn parse_report_request(mut payload: Multipart) -> Result<ReportRequest, Error> {
+    let mut report_type: Option<String> = None;
+    let mut denial_text: Option<String> = None;
+    let mut files: Vec<(String, Vec<u8>)> = Vec::new();
+
+    while let Some(item) = payload.next().await {
+        let mut field = item?;
+        let content_disposition = match field.content_disposition().cloned() {
+            Some(cd) => cd,
+            None => continue,
+        };
+
+        let Some(name) = content_disposition.get_name() else {
+            continue;
+        };
+
+        let data = read_field_bytes(&mut field).await?;
+
+        match name {
+            "report_type" => report_type = Some(bytes_to_string(data, name)?),
+            "denial_text" => denial_text = Some(bytes_to_string(data, name)?),
+            "files[]" => {
+                let filename = content_disposition
+                    .get_filename()
+                    .map(ToOwned::to_owned)
+                    .unwrap_or_else(|| "file.txt".to_string());
+                files.push((filename, data));
+            }
+            _ => {}
+        }
+    }
+
+    Ok(ReportRequest {
+        report_type: report_type.unwrap_or_default(),
+        denial_text: denial_text.unwrap_or_default(),
+        files,
+    })
+}
+
+/// Collects the bytes for a multipart field, ensuring the stream is fully read.
+async fn read_field_bytes(field: &mut Field) -> Result<Vec<u8>, Error> {
+    let mut data = Vec::new();
+    while let Some(chunk) = field.next().await {
+        let chunk = chunk?;
+        data.extend_from_slice(&chunk);
+    }
+    Ok(data)
+}
+
+/// Converts UTF-8 encoded field data into a `String` with friendly error reporting.
+fn bytes_to_string(data: Vec<u8>, field_name: &str) -> Result<String, Error> {
+    String::from_utf8(data)
+        .map_err(|_| error::ErrorBadRequest(format!("Invalid UTF-8 in field `{}`", field_name)))
 }
 // This module defines the POST /api/report endpoint for generating medical reports using GPT.
 // It handles multipart form data containing the report type, optional denial text, and file uploads,
