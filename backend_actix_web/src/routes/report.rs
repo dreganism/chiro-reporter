@@ -2,7 +2,7 @@ use actix_multipart::{Field, Multipart};
 use actix_web::{error, post, web, Error, HttpResponse};
 use futures_util::StreamExt;
 
-use crate::llm::{generate_report, ReportRequest};
+use crate::services::openai::{generate_report, ReportRequest};
 
 /// POST /api/report - Generate GPT medical report
 #[post("/api/report")]
